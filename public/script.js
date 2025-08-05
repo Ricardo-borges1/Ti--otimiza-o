@@ -12,18 +12,8 @@ async function carregarUnidades() {
         <h2>${unidade.nome}</h2>
         <p>${unidade.endereco}</p>
         <div class="botoes">
-          <button class="btn ver-btn" onclick="toggleComputadores(${unidade.id})">Ver</button>
-          <button class="btn adicionar-btn" onclick="mostrarFormulario(${unidade.id})">Adicionar</button>
-        </div>
-        <div id="computadores-${unidade.id}" class="computadores-container" style="display: none;"></div>
-        <div id="formulario-${unidade.id}" class="formulario-container" style="display: none;">
-          <h3>Adicionar Computador</h3>
-          <form onsubmit="adicionarComputador(event, ${unidade.id})">
-            <input type="text" id="setor-${unidade.id}" placeholder="Setor" required>
-            <input type="text" id="patrimonio-${unidade.id}" placeholder="Patrimônio" required>
-            <input type="number" id="quantidade-${unidade.id}" placeholder="Quantidade" value="1" min="1" required>
-            <button type="submit" class="btn salvar-btn">Salvar</button>
-          </form>
+          <button class="btn ver-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}')">Ver</button>
+          <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
         </div>
       `;
       container.appendChild(card);
@@ -33,88 +23,80 @@ async function carregarUnidades() {
   }
 }
 
-function toggleComputadores(unidadeId) {
-  const container = document.getElementById('lista-unidades');
-  const div = document.getElementById(`computadores-${unidadeId}`);
-
-  // Fecha todos os painéis exceto o atual
-  const allComputadores = container.querySelectorAll('.computadores-container');
-  allComputadores.forEach(c => {
-    if (c !== div) c.style.display = 'none';
-  });
-
-  // Toggle do painel atual
-  const isVisible = div.style.display === 'block';
-  div.style.display = isVisible ? 'none' : 'block';
-
-  // Carrega computadores só se abrir
-  if (!isVisible) carregarComputadores(unidadeId);
-
-  // Fecha todos os formulários menos o do painel atual
-  const allForms = container.querySelectorAll('.formulario-container');
-  allForms.forEach(f => {
-    if (f.id !== `formulario-${unidadeId}`) f.style.display = 'none';
-  });
-}
-
-
-
-function mostrarFormulario(unidadeId) {
-  const form = document.getElementById(`formulario-${unidadeId}`);
-  const containerComp = document.getElementById(`computadores-${unidadeId}`);
-
-  // Abre o painel de computadores se estiver fechado
-  if (containerComp.style.display !== 'block') {
-    containerComp.style.display = 'block';
-    carregarComputadores(unidadeId);
-  }
-
-  // Toggle formulário
-  form.style.display = form.style.display === 'block' ? 'none' : 'block';
-}
-
-
-
-async function carregarComputadores(unidadeId) {
+// Abrir modal com computadores
+async function abrirModalComputadores(unidadeId, unidadeNome) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
     const computadores = await response.json();
 
-    const container = document.getElementById(`computadores-${unidadeId}`);
-    container.innerHTML = '';
+    const modalBody = document.getElementById('modal-body');
+    modalBody.innerHTML = `<h2 style="margin-bottom: 16px; color: #004080;">${unidadeNome}</h2>`;
 
     if (computadores.length === 0) {
-      container.innerHTML = '<p>Nenhum computador cadastrado.</p>';
-      return;
+      modalBody.innerHTML += '<p>Nenhum computador cadastrado.</p>';
+    } else {
+      computadores.forEach(comp => {
+        const div = document.createElement('div');
+        div.className = `computador-card ${comp.otimizado ? 'otimizado' : 'pendente'}`;
+        div.innerHTML = `
+          <div class="info">
+            <strong>Setor:</strong> ${comp.setor}<br>
+            <strong>Patrimônio:</strong> ${comp.patrimonio}<br>
+            <strong>Quantidade:</strong> ${comp.quantidade}<br>
+            <span class="status">${comp.otimizado ? 'Otimizado' : 'Pendente'}</span>
+          </div>
+          <div class="actions">
+            <label>
+              <input type="checkbox" onchange="alterarStatusOtimizado(${comp.id}, this.checked, ${unidadeId})" ${comp.otimizado ? 'checked' : ''}> Otimizado
+            </label>
+            <button onclick="editarComputador(${comp.id}, '${comp.setor}', '${comp.patrimonio}', ${comp.quantidade}, ${unidadeId})" class="btn editar-btn">Editar</button>
+            <button onclick="excluirComputador(${comp.id}, ${unidadeId})" class="btn excluir-btn">Excluir</button>
+          </div>
+        `;
+        modalBody.appendChild(div);
+      });
     }
 
-    computadores.forEach(comp => {
-      const div = document.createElement('div');
-      div.className = `computador-card ${comp.otimizado ? 'otimizado' : 'pendente'}`;
-
-      div.innerHTML = `
-        <div class="info">
-          <strong>Setor:</strong> ${comp.setor}<br>
-          <strong>Patrimônio:</strong> ${comp.patrimonio}<br>
-          <strong>Quantidade:</strong> ${comp.quantidade}<br>
-          <span class="status">${comp.otimizado ? 'Otimizado' : 'Pendente'}</span>
-        </div>
-        <div class="actions">
-          <label>
-            <input type="checkbox" onchange="alterarStatusOtimizado(${comp.id}, this.checked, ${unidadeId})" ${comp.otimizado ? 'checked' : ''}> Otimizado
-          </label>
-          <button onclick="editarComputador(${comp.id}, '${comp.setor}', '${comp.patrimonio}', ${comp.quantidade}, ${unidadeId})" class="btn editar-btn">Editar</button>
-          <button onclick="excluirComputador(${comp.id}, ${unidadeId})" class="btn excluir-btn">Excluir</button>
-        </div>
-      `;
-
-      container.appendChild(div);
-    });
+    abrirModal();
   } catch (error) {
     console.error('Erro ao carregar computadores:', error);
   }
 }
 
+// Abrir modal com formulário
+function abrirModalFormulario(unidadeId, unidadeNome) {
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = `
+    <h2 style="margin-bottom: 16px; color: #004080;">${unidadeNome}</h2>
+    <div class="formulario-container">
+      <h3>Adicionar Computador</h3>
+      <form onsubmit="adicionarComputador(event, ${unidadeId})">
+        <input type="text" id="setor-${unidadeId}" placeholder="Setor" required>
+        <input type="text" id="patrimonio-${unidadeId}" placeholder="Patrimônio" required>
+        <input type="number" id="quantidade-${unidadeId}" placeholder="Quantidade" value="1" min="1" required>
+        <button type="submit" class="btn salvar-btn">Salvar</button>
+      </form>
+    </div>
+  `;
+  abrirModal();
+}
+
+// Funções auxiliares do modal
+function abrirModal() {
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modal-body').innerHTML = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', fecharModal);
+window.addEventListener('click', (e) => {
+  if (e.target.id === 'modal') fecharModal();
+});
+
+// Adicionar computador
 async function adicionarComputador(event, unidadeId) {
   event.preventDefault();
   const setor = document.getElementById(`setor-${unidadeId}`).value.trim();
@@ -134,8 +116,7 @@ async function adicionarComputador(event, unidadeId) {
     });
 
     if (response.ok) {
-      document.getElementById(`formulario-${unidadeId}`).style.display = 'none';
-      carregarComputadores(unidadeId);
+      abrirModalComputadores(unidadeId);
     } else {
       alert('Erro ao adicionar computador.');
     }
@@ -144,19 +125,22 @@ async function adicionarComputador(event, unidadeId) {
   }
 }
 
+// Editar
 function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
-  const container = document.getElementById(`computadores-${unidadeId}`);
-  container.innerHTML = `
-    <div class="computador-card editar">
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = `
+    <h3 style="color: #004080;">Editar Computador</h3>
+    <div class="formulario-container">
       <label>Setor: <input type="text" id="input-setor-${compId}" value="${setor}"></label><br>
       <label>Patrimônio: <input type="text" id="input-patrimonio-${compId}" value="${patrimonio}"></label><br>
       <label>Quantidade: <input type="number" id="input-quantidade-${compId}" value="${quantidade}" min="1"></label><br>
       <button onclick="salvarComputador(${compId}, ${unidadeId})" class="btn salvar-btn">Salvar</button>
-      <button onclick="cancelarEdicao(${unidadeId})" class="btn cancelar-btn">Cancelar</button>
+      <button onclick="abrirModalComputadores(${unidadeId})" class="btn cancelar-btn">Cancelar</button>
     </div>
   `;
 }
 
+// Salvar edição
 async function salvarComputador(compId, unidadeId) {
   const setor = document.getElementById(`input-setor-${compId}`).value;
   const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value;
@@ -170,7 +154,7 @@ async function salvarComputador(compId, unidadeId) {
     });
 
     if (response.ok) {
-      carregarComputadores(unidadeId);
+      abrirModalComputadores(unidadeId);
     } else {
       alert('Erro ao salvar.');
     }
@@ -179,10 +163,7 @@ async function salvarComputador(compId, unidadeId) {
   }
 }
 
-function cancelarEdicao(unidadeId) {
-  carregarComputadores(unidadeId);
-}
-
+// Excluir
 async function excluirComputador(compId, unidadeId) {
   if (!confirm('Tem certeza que deseja excluir?')) return;
 
@@ -192,7 +173,7 @@ async function excluirComputador(compId, unidadeId) {
     });
 
     if (response.ok) {
-      carregarComputadores(unidadeId);
+      abrirModalComputadores(unidadeId);
     } else {
       alert('Erro ao excluir.');
     }
@@ -201,6 +182,7 @@ async function excluirComputador(compId, unidadeId) {
   }
 }
 
+// Alterar status
 async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   try {
     const response = await fetch(`/api/computadores/${compId}`, {
@@ -210,7 +192,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
     });
 
     if (response.ok) {
-      carregarComputadores(unidadeId);
+      abrirModalComputadores(unidadeId);
     } else {
       alert('Erro ao alterar status.');
     }

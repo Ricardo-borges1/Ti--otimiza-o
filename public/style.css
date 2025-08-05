@@ -15,7 +15,7 @@ body {
 h1 {
   text-align: center;
   margin-bottom: 30px;
-  color: #004080; /* azul escuro */
+  color: #004080;
   font-weight: 700;
   letter-spacing: 2px;
 }
@@ -33,10 +33,11 @@ h1 {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgb(0 64 128 / 0.1);
   padding: 20px;
-  transition: box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: box-shadow 0.3s ease;
+  min-height: 180px;
 }
 
 .unidade-card:hover {
@@ -61,7 +62,7 @@ h1 {
 
 /* Botões */
 .botoes {
-  margin-bottom: 12px;
+  margin-top: auto;
   display: flex;
   gap: 12px;
 }
@@ -78,7 +79,6 @@ h1 {
   user-select: none;
 }
 
-/* Botão Ver */
 .ver-btn {
   background-color: #0073e6;
   color: white;
@@ -88,7 +88,6 @@ h1 {
   background-color: #005bb5;
 }
 
-/* Botão Adicionar */
 .adicionar-btn {
   background-color: #004080;
   color: white;
@@ -98,7 +97,6 @@ h1 {
   background-color: #002d55;
 }
 
-/* Botão editar */
 .editar-btn {
   background-color: #ffa500;
   color: #222;
@@ -108,7 +106,6 @@ h1 {
   background-color: #cc8400;
 }
 
-/* Botão excluir */
 .excluir-btn {
   background-color: #d9534f;
   color: white;
@@ -118,7 +115,6 @@ h1 {
   background-color: #b52b27;
 }
 
-/* Botão salvar */
 .salvar-btn {
   background-color: #28a745;
   color: white;
@@ -129,7 +125,6 @@ h1 {
   background-color: #1e7e34;
 }
 
-/* Botão cancelar */
 .cancelar-btn {
   background-color: #6c757d;
   color: white;
@@ -139,45 +134,7 @@ h1 {
   background-color: #565e64;
 }
 
-/* Formulário adicionar computador */
-.formulario-container {
-  background: #e9f0fb;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
-  box-shadow: inset 0 0 8px rgb(0 64 128 / 0.15);
-}
-
-.formulario-container h3 {
-  color: #004080;
-  margin-bottom: 12px;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-/* Inputs do formulário - menores */
-.formulario-container input {
-  width: calc(100% - 16px);
-  max-width: 250px;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  border: 1.8px solid #0073e6;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.formulario-container input:focus {
-  border-color: #004080;
-  outline: none;
-}
-
-/* Container dos computadores */
-.computadores-container {
-  margin-top: 12px;
-}
-
-/* Cartão de computador */
+/* Cartão computador */
 .computador-card {
   border-radius: 8px;
   padding: 16px;
@@ -189,7 +146,6 @@ h1 {
   box-shadow: 0 3px 8px rgb(0 64 128 / 0.1);
 }
 
-/* Fundo verde para otimizado, vermelho para pendente */
 .computador-card.otimizado {
   background-color: #28a745;
 }
@@ -198,10 +154,9 @@ h1 {
   background-color: #dc3545;
 }
 
-/* Info do computador */
 .computador-card .info {
   flex: 1;
-  color: black; /* texto padrão preto */
+  color: black;
   font-weight: 600;
   font-size: 1rem;
   letter-spacing: 0.5px;
@@ -209,7 +164,7 @@ h1 {
 }
 
 .computador-card .info strong {
-  color: #ffffff; /* título branco */
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -226,7 +181,7 @@ h1 {
   letter-spacing: 1px;
 }
 
-/* Ações ao lado */
+/* Ações */
 .computador-card .actions {
   display: flex;
   flex-direction: column;
@@ -236,17 +191,15 @@ h1 {
   min-width: 120px;
 }
 
-/* Checkbox destacado */
 .computador-card .actions label {
   background-color: rgba(255, 255, 255, 0.9);
   padding: 10px 16px;
   border-radius: 10px;
   font-weight: 700;
   color: #333;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   user-select: none;
-  margin-bottom: 6px;
   transition: background-color 0.3s ease;
 }
 
@@ -262,7 +215,6 @@ h1 {
   cursor: pointer;
 }
 
-/* Botões dentro das ações */
 .computador-card .actions .btn {
   width: 100%;
   padding: 8px 12px;
@@ -275,19 +227,97 @@ h1 {
   user-select: none;
 }
 
-/* Responsividade simples */
+/* Formulário */
+.formulario-container {
+  background: #e9f0fb;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+  box-shadow: inset 0 0 8px rgb(0 64 128 / 0.15);
+}
+
+.formulario-container h3 {
+  color: #004080;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.formulario-container input {
+  width: calc(100% - 16px);
+  max-width: 250px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1.8px solid #0073e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.formulario-container input:focus {
+  border-color: #004080;
+  outline: none;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #fff;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 95%;
+  max-width: 700px;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 26px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+}
+
+.modal-close:hover {
+  color: #000;
+}
+
+/* Responsividade */
 @media (max-width: 480px) {
   .grid-unidades {
     grid-template-columns: 1fr;
   }
-  
+
   .computador-card {
     flex-direction: column;
   }
-  
+
   .computador-card .actions {
     flex-direction: row;
     gap: 10px;
     margin-top: 12px;
+  }
+
+  .modal-content {
+    width: 100%;
+    padding: 16px;
   }
 }
