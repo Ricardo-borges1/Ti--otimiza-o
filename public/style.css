@@ -1,0 +1,294 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: #f0f8ff;
+  color: #222;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #004080; /* azul escuro */
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* Grid das unidades */
+.grid-unidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Cartão unidade */
+.unidade-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgb(0 64 128 / 0.1);
+  padding: 20px;
+  transition: box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 250px;
+}
+
+.unidade-card:hover {
+  box-shadow: 0 6px 16px rgb(0 64 128 / 0.2);
+}
+
+.unidade-card h2 {
+  color: #004080;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+}
+
+.unidade-card p {
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+/* Botões */
+.botoes {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 2px 6px rgb(0 64 128 / 0.15);
+  user-select: none;
+}
+
+/* Botão Ver */
+.ver-btn {
+  background-color: #0073e6;
+  color: white;
+}
+
+.ver-btn:hover {
+  background-color: #005bb5;
+}
+
+/* Botão Adicionar */
+.adicionar-btn {
+  background-color: #004080;
+  color: white;
+}
+
+.adicionar-btn:hover {
+  background-color: #002d55;
+}
+
+/* Botão editar */
+.editar-btn {
+  background-color: #ffa500;
+  color: #222;
+}
+
+.editar-btn:hover {
+  background-color: #cc8400;
+}
+
+/* Botão excluir */
+.excluir-btn {
+  background-color: #d9534f;
+  color: white;
+}
+
+.excluir-btn:hover {
+  background-color: #b52b27;
+}
+
+/* Botão salvar */
+.salvar-btn {
+  background-color: #28a745;
+  color: white;
+  margin-right: 10px;
+}
+
+.salvar-btn:hover {
+  background-color: #1e7e34;
+}
+
+/* Botão cancelar */
+.cancelar-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancelar-btn:hover {
+  background-color: #565e64;
+}
+
+/* Formulário adicionar computador */
+.formulario-container {
+  background: #e9f0fb;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+  box-shadow: inset 0 0 8px rgb(0 64 128 / 0.15);
+}
+
+.formulario-container h3 {
+  color: #004080;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Inputs do formulário - menores */
+.formulario-container input {
+  width: calc(100% - 16px);
+  max-width: 250px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1.8px solid #0073e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.formulario-container input:focus {
+  border-color: #004080;
+  outline: none;
+}
+
+/* Container dos computadores */
+.computadores-container {
+  margin-top: 12px;
+}
+
+/* Cartão de computador */
+.computador-card {
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  position: relative;
+  box-shadow: 0 3px 8px rgb(0 64 128 / 0.1);
+}
+
+/* Fundo verde para otimizado, vermelho para pendente */
+.computador-card.otimizado {
+  background-color: #28a745;
+}
+
+.computador-card.pendente {
+  background-color: #dc3545;
+}
+
+/* Info do computador */
+.computador-card .info {
+  flex: 1;
+  color: black; /* texto padrão preto */
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.computador-card .info strong {
+  color: #ffffff; /* título branco */
+  font-weight: 700;
+}
+
+.computador-card .info span.status {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.15em;
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #333;
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: fit-content;
+  letter-spacing: 1px;
+}
+
+/* Ações ao lado */
+.computador-card .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  align-items: flex-start;
+  min-width: 120px;
+}
+
+/* Checkbox destacado */
+.computador-card .actions label {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.computador-card .actions label:hover {
+  background-color: #f0f0f0;
+}
+
+.computador-card .actions input[type="checkbox"] {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* Botões dentro das ações */
+.computador-card .actions .btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgb(0 64 128 / 0.15);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Responsividade simples */
+@media (max-width: 480px) {
+  .grid-unidades {
+    grid-template-columns: 1fr;
+  }
+  
+  .computador-card {
+    flex-direction: column;
+  }
+  
+  .computador-card .actions {
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 12px;
+  }
+}
