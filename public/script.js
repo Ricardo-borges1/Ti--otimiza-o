@@ -202,4 +202,27 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   }
 }
 
+
+async function atualizarProgresso(unidadeId) {
+  try {
+    const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
+    const computadores = await response.json();
+
+    const total = computadores.length;
+    const otimizados = computadores.filter(c => c.otimizado).length;
+    const progresso = total === 0 ? 0 : Math.round((otimizados / total) * 100);
+
+    const barra = document.getElementById(`barra-progresso-${unidadeId}`);
+    const texto = document.getElementById(`texto-progresso-${unidadeId}`);
+
+    if (barra && texto) {
+      barra.style.width = `${progresso}%`;
+      texto.innerText = `Otimizado: ${progresso}%`;
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar barra de progresso:', error);
+  }
+}
+
+
 window.onload = carregarUnidades;
