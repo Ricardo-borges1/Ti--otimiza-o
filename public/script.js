@@ -34,16 +34,46 @@ async function carregarUnidades() {
 }
 
 function toggleComputadores(unidadeId) {
+  const container = document.getElementById('lista-unidades');
   const div = document.getElementById(`computadores-${unidadeId}`);
+
+  // Fecha todos os painéis exceto o atual
+  const allComputadores = container.querySelectorAll('.computadores-container');
+  allComputadores.forEach(c => {
+    if (c !== div) c.style.display = 'none';
+  });
+
+  // Toggle do painel atual
   const isVisible = div.style.display === 'block';
   div.style.display = isVisible ? 'none' : 'block';
+
+  // Carrega computadores só se abrir
   if (!isVisible) carregarComputadores(unidadeId);
+
+  // Fecha todos os formulários menos o do painel atual
+  const allForms = container.querySelectorAll('.formulario-container');
+  allForms.forEach(f => {
+    if (f.id !== `formulario-${unidadeId}`) f.style.display = 'none';
+  });
 }
+
+
 
 function mostrarFormulario(unidadeId) {
   const form = document.getElementById(`formulario-${unidadeId}`);
+  const containerComp = document.getElementById(`computadores-${unidadeId}`);
+
+  // Abre o painel de computadores se estiver fechado
+  if (containerComp.style.display !== 'block') {
+    containerComp.style.display = 'block';
+    carregarComputadores(unidadeId);
+  }
+
+  // Toggle formulário
   form.style.display = form.style.display === 'block' ? 'none' : 'block';
 }
+
+
 
 async function carregarComputadores(unidadeId) {
   try {
