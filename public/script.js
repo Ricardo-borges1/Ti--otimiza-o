@@ -1,3 +1,5 @@
+// script.js completo
+
 async function carregarUnidades() {
   try {
     const response = await fetch('/api/unidades');
@@ -6,20 +8,17 @@ async function carregarUnidades() {
     container.innerHTML = '';
 
     unidades.forEach(unidade => {
-      // Criar cartão com barra de progresso
       const card = document.createElement('div');
       card.className = 'unidade-card';
       card.innerHTML = `
         <h2>${unidade.nome}</h2>
         <p>${unidade.endereco}</p>
-
         <div class="progresso-container">
           <div class="barra-externa">
             <div id="barra-progresso-${unidade.id}" class="barra-interna"></div>
           </div>
-          <div id="texto-progresso-${unidade.id}" class="texto-progresso"></div>
+          <div id="texto-progresso-${unidade.id}" class="texto-progresso">Otimizado: 0% (0 de 0)</div>
         </div>
-
         <div class="botoes">
           <button class="btn ver-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}')">Ver</button>
           <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
@@ -28,7 +27,7 @@ async function carregarUnidades() {
       `;
       container.appendChild(card);
 
-      // Atualiza a barra de progresso da unidade
+      // Atualiza o progresso para essa unidade ao criar o card
       atualizarProgresso(unidade.id);
     });
   } catch (error) {
@@ -36,8 +35,7 @@ async function carregarUnidades() {
   }
 }
 
-// Modal e demais funções suas mantidas iguais, sem mexer
-
+// Abrir modal com computadores
 async function abrirModalComputadores(unidadeId, unidadeNome) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -77,6 +75,7 @@ async function abrirModalComputadores(unidadeId, unidadeNome) {
   }
 }
 
+// Abrir modal com formulário
 function abrirModalFormulario(unidadeId, unidadeNome) {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = `
@@ -94,6 +93,7 @@ function abrirModalFormulario(unidadeId, unidadeNome) {
   abrirModal();
 }
 
+// Funções auxiliares do modal
 function abrirModal() {
   document.getElementById('modal').style.display = 'flex';
 }
@@ -108,6 +108,7 @@ window.addEventListener('click', (e) => {
   if (e.target.id === 'modal') fecharModal();
 });
 
+// Adicionar computador
 async function adicionarComputador(event, unidadeId) {
   event.preventDefault();
   const setor = document.getElementById(`setor-${unidadeId}`).value.trim();
@@ -137,6 +138,7 @@ async function adicionarComputador(event, unidadeId) {
   }
 }
 
+// Editar computador
 function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = `
@@ -146,15 +148,21 @@ function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
       <label>Patrimônio: <input type="text" id="input-patrimonio-${compId}" value="${patrimonio}"></label><br>
       <label>Quantidade: <input type="number" id="input-quantidade-${compId}" value="${quantidade}" min="1"></label><br>
       <button onclick="salvarComputador(${compId}, ${unidadeId})" class="btn salvar-btn">Salvar</button>
-      <button onclick="abrirModalComputadores(${unidadeId})" class="btn cancelar-btn">Cancelar</button>
+      <button onclick="abrirModalComputadores(${unidadeId}, '')" class="btn cancelar-btn">Cancelar</button>
     </div>
   `;
 }
 
+// Salvar edição
 async function salvarComputador(compId, unidadeId) {
-  const setor = document.getElementById(`input-setor-${compId}`).value;
-  const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value;
-  const quantidade = parseInt(document.getElementById(`input-quantidade-${compId}`).value, 10);
+  const setor = document.getElementById(`input-setor-${compId}`).value.trim();
+  const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value.trim();
+  const quantidade = parseInt(document.getElementById(`input-quantidade-${compId}`).value.trim(), 10);
+
+  if (!setor || !patrimonio || quantidade < 1) {
+    alert('Preencha todos os campos corretamente.');
+    return;
+  }
 
   try {
     const response = await fetch(`/api/computadores/${compId}`, {
@@ -174,6 +182,7 @@ async function salvarComputador(compId, unidadeId) {
   }
 }
 
+// Excluir computador
 async function excluirComputador(compId, unidadeId) {
   if (!confirm('Tem certeza que deseja excluir?')) return;
 
@@ -193,6 +202,7 @@ async function excluirComputador(compId, unidadeId) {
   }
 }
 
+// Alterar status otimizado
 async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   try {
     const response = await fetch(`/api/computadores/${compId}`, {
@@ -202,8 +212,8 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
     });
 
     if (response.ok) {
-      abrirModalComputadores(unidadeId);
       atualizarProgresso(unidadeId);
+      abrirModalComputadores(unidadeId);
     } else {
       alert('Erro ao alterar status.');
     }
@@ -212,7 +222,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   }
 }
 
-// FUNÇÃO NOVA: Atualiza a barra de progresso da unidade
+// Atualizar barra de progresso para cada unidade
 async function atualizarProgresso(unidadeId) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -226,7 +236,7 @@ async function atualizarProgresso(unidadeId) {
     const texto = document.getElementById(`texto-progresso-${unidadeId}`);
 
     if (barra && texto) {
-      barra.style.width = `${progresso}%`; // pinta só até o progresso
+      barra.style.width = `${progresso}%`;
       texto.innerText = `Otimizado: ${progresso}% (${otimizados} de ${total})`;
     }
   } catch (error) {
@@ -234,47 +244,48 @@ async function atualizarProgresso(unidadeId) {
   }
 }
 
+// Função para exportar CSV formatado para Excel
+function exportarCSV(unidadeId, nomeUnidade, computadores) {
+  const headers = ['Setor', 'Patrimônio', 'Quantidade', 'Otimizado'];
+  const linhas = [headers.join(',')];
 
-// FUNÇÃO NOVA: Gerar relatório CSV exportável (pode abrir no Excel)
-async function gerarRelatorio(unidadeId, unidadeNome) {
+  computadores.forEach(comp => {
+    const setor = `"${comp.setor.replace(/"/g, '""')}"`;
+    const patrimonio = `"${comp.patrimonio.replace(/"/g, '""')}"`;
+    const quantidade = comp.quantidade;
+    const otimizado = comp.otimizado ? 'Sim' : 'Não';
+    linhas.push([setor, patrimonio, quantidade, otimizado].join(','));
+  });
+
+  const csvContent = '\uFEFF' + linhas.join('\r\n');
+
+  const blob = new Blob([csvContent], { type: 'application/octet-stream;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${nomeUnidade}_computadores.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Função para buscar computadores e gerar CSV
+async function gerarRelatorio(unidadeId, nomeUnidade) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
-    const computadores = await response.json();
+    if (!response.ok) throw new Error('Erro ao buscar computadores');
 
+    const computadores = await response.json();
     if (computadores.length === 0) {
       alert('Nenhum computador cadastrado para gerar relatório.');
       return;
     }
 
-    const linhas = [
-      ['Setor', 'Patrimônio', 'Quantidade', 'Otimizado'],
-      ...computadores.map(c => [
-        c.setor,
-        c.patrimonio,
-        c.quantidade,
-        c.otimizado ? 'Sim' : 'Não'
-      ])
-    ];
-
-    // Converte para CSV separado por ponto e vírgula (bom para Excel em PT-BR)
-    const csvContent = linhas.map(e => e.join(';')).join('\n');
-
-    // Cria arquivo blob para download
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    // Cria link temporário e "clica" para download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relatorio_unidade_${unidadeNome.replace(/\s+/g, '_')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+    exportarCSV(unidadeId, nomeUnidade, computadores);
   } catch (error) {
-    console.error('Erro ao gerar relatório:', error);
     alert('Erro ao gerar relatório.');
+    console.error(error);
   }
 }
 
