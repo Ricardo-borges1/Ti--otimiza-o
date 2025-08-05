@@ -319,6 +319,49 @@ h1 {
   outline: none;
 }
 
+.texto-progresso {
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #86c1fc; /* azul escuro */
+  text-align: center;
+}
+
+.texto-progresso-destaque {
+  font-size: 1.0rem;
+  color: #529fec; /* azul mais vibrante */
+  letter-spacing: 1.2px;
+}
+
+.progresso-container {
+  margin-bottom: 10px;
+}
+
+.barra-externa {
+  width: 100%;
+  background-color: #d1d9e6; /* cinza claro */
+  border-radius: 6px;
+  height: 10px; /* menor altura */
+  overflow: hidden;
+}
+
+.barra-interna {
+  height: 100%;
+  background-color: #004080; /* azul escuro */
+  width: 0%;
+  transition: width 0.5s ease-in-out;
+  border-radius: 6px 0 0 6px;
+}
+
+.texto-progresso {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 0.85rem; /* fonte menor */
+  color: #005bb5; /* azul vibrante */
+  text-align: center;
+  letter-spacing: 1px;
+}
+
 
 
 /* Responsividade */

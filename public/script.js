@@ -1,5 +1,4 @@
 async function carregarUnidades() {
-    let todasUnidades = [];
   try {
     const response = await fetch('/api/unidades');
     const unidades = await response.json();
@@ -7,24 +6,38 @@ async function carregarUnidades() {
     container.innerHTML = '';
 
     unidades.forEach(unidade => {
+      // Criar cartão com barra de progresso
       const card = document.createElement('div');
       card.className = 'unidade-card';
       card.innerHTML = `
         <h2>${unidade.nome}</h2>
         <p>${unidade.endereco}</p>
+
+        <div class="progresso-container">
+          <div class="barra-externa">
+            <div id="barra-progresso-${unidade.id}" class="barra-interna"></div>
+          </div>
+          <div id="texto-progresso-${unidade.id}" class="texto-progresso"></div>
+        </div>
+
         <div class="botoes">
           <button class="btn ver-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}')">Ver</button>
           <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
+          <button class="btn relatorio-btn" onclick="gerarRelatorio(${unidade.id}, '${unidade.nome}')">Relatório</button>
         </div>
       `;
       container.appendChild(card);
+
+      // Atualiza a barra de progresso da unidade
+      atualizarProgresso(unidade.id);
     });
   } catch (error) {
     console.error('Erro ao carregar unidades:', error);
   }
 }
 
-// Abrir modal com computadores
+// Modal e demais funções suas mantidas iguais, sem mexer
+
 async function abrirModalComputadores(unidadeId, unidadeNome) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -64,7 +77,6 @@ async function abrirModalComputadores(unidadeId, unidadeNome) {
   }
 }
 
-// Abrir modal com formulário
 function abrirModalFormulario(unidadeId, unidadeNome) {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = `
@@ -82,7 +94,6 @@ function abrirModalFormulario(unidadeId, unidadeNome) {
   abrirModal();
 }
 
-// Funções auxiliares do modal
 function abrirModal() {
   document.getElementById('modal').style.display = 'flex';
 }
@@ -97,7 +108,6 @@ window.addEventListener('click', (e) => {
   if (e.target.id === 'modal') fecharModal();
 });
 
-// Adicionar computador
 async function adicionarComputador(event, unidadeId) {
   event.preventDefault();
   const setor = document.getElementById(`setor-${unidadeId}`).value.trim();
@@ -118,6 +128,7 @@ async function adicionarComputador(event, unidadeId) {
 
     if (response.ok) {
       abrirModalComputadores(unidadeId);
+      atualizarProgresso(unidadeId);
     } else {
       alert('Erro ao adicionar computador.');
     }
@@ -126,7 +137,6 @@ async function adicionarComputador(event, unidadeId) {
   }
 }
 
-// Editar
 function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = `
@@ -141,7 +151,6 @@ function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
   `;
 }
 
-// Salvar edição
 async function salvarComputador(compId, unidadeId) {
   const setor = document.getElementById(`input-setor-${compId}`).value;
   const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value;
@@ -156,6 +165,7 @@ async function salvarComputador(compId, unidadeId) {
 
     if (response.ok) {
       abrirModalComputadores(unidadeId);
+      atualizarProgresso(unidadeId);
     } else {
       alert('Erro ao salvar.');
     }
@@ -164,7 +174,6 @@ async function salvarComputador(compId, unidadeId) {
   }
 }
 
-// Excluir
 async function excluirComputador(compId, unidadeId) {
   if (!confirm('Tem certeza que deseja excluir?')) return;
 
@@ -175,6 +184,7 @@ async function excluirComputador(compId, unidadeId) {
 
     if (response.ok) {
       abrirModalComputadores(unidadeId);
+      atualizarProgresso(unidadeId);
     } else {
       alert('Erro ao excluir.');
     }
@@ -183,7 +193,6 @@ async function excluirComputador(compId, unidadeId) {
   }
 }
 
-// Alterar status
 async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   try {
     const response = await fetch(`/api/computadores/${compId}`, {
@@ -194,6 +203,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
 
     if (response.ok) {
       abrirModalComputadores(unidadeId);
+      atualizarProgresso(unidadeId);
     } else {
       alert('Erro ao alterar status.');
     }
@@ -202,7 +212,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
   }
 }
 
-
+// FUNÇÃO NOVA: Atualiza a barra de progresso da unidade
 async function atualizarProgresso(unidadeId) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -216,13 +226,56 @@ async function atualizarProgresso(unidadeId) {
     const texto = document.getElementById(`texto-progresso-${unidadeId}`);
 
     if (barra && texto) {
-      barra.style.width = `${progresso}%`;
-      texto.innerText = `Otimizado: ${progresso}%`;
+      barra.style.width = `${progresso}%`; // pinta só até o progresso
+      texto.innerText = `Otimizado: ${progresso}% (${otimizados} de ${total})`;
     }
   } catch (error) {
     console.error('Erro ao atualizar barra de progresso:', error);
   }
 }
 
+
+// FUNÇÃO NOVA: Gerar relatório CSV exportável (pode abrir no Excel)
+async function gerarRelatorio(unidadeId, unidadeNome) {
+  try {
+    const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
+    const computadores = await response.json();
+
+    if (computadores.length === 0) {
+      alert('Nenhum computador cadastrado para gerar relatório.');
+      return;
+    }
+
+    const linhas = [
+      ['Setor', 'Patrimônio', 'Quantidade', 'Otimizado'],
+      ...computadores.map(c => [
+        c.setor,
+        c.patrimonio,
+        c.quantidade,
+        c.otimizado ? 'Sim' : 'Não'
+      ])
+    ];
+
+    // Converte para CSV separado por ponto e vírgula (bom para Excel em PT-BR)
+    const csvContent = linhas.map(e => e.join(';')).join('\n');
+
+    // Cria arquivo blob para download
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    // Cria link temporário e "clica" para download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio_unidade_${unidadeNome.replace(/\s+/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('Erro ao gerar relatório:', error);
+    alert('Erro ao gerar relatório.');
+  }
+}
 
 window.onload = carregarUnidades;
