@@ -300,6 +300,27 @@ h1 {
   color: #000;
 }
 
+
+#buscaUnidade {
+  display: block;
+  margin: 0 auto 30px auto;
+  padding: 12px 18px;
+  font-size: 1rem;
+  border: 2px solid #004080;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: border-color 0.3s ease;
+}
+
+#buscaUnidade:focus {
+  border-color: #0073e6;
+  outline: none;
+}
+
+
+
 /* Responsividade */
 @media (max-width: 480px) {
   .grid-unidades {
@@ -321,3 +342,6 @@ h1 {
     padding: 16px;
   }
 }
+
+
+

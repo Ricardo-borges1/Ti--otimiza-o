@@ -1,4 +1,5 @@
 async function carregarUnidades() {
+    let todasUnidades = [];
   try {
     const response = await fetch('/api/unidades');
     const unidades = await response.json();
