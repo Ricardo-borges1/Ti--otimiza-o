@@ -20,7 +20,7 @@ async function carregarUnidades() {
           <div id="texto-progresso-${unidade.id}" class="texto-progresso">Otimizado: 0% (0 de 0)</div>
         </div>
         <div class="botoes">
-          <button class="btn ver-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}')">Ver</button>
+          <button class="btn ver-btn" onclick="irParaUnidade(${unidade.id})">Ver</button>
           <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
           <button class="btn relatorio-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}', true)">Comentário</button>
         </div>
@@ -34,6 +34,13 @@ async function carregarUnidades() {
     console.error('Erro ao carregar unidades:', error);
   }
 }
+
+
+function irParaUnidade(unidadeId) {
+  // Redireciona para unidade.html com o id na query string
+  window.location.href = `unidade.html?id=${unidadeId}`;
+}
+
 
 // Abrir modal com computadores e opções
 async function abrirModalComputadores(unidadeId, unidadeNome, abrirComentario = false) {
@@ -115,6 +122,7 @@ window.addEventListener('click', (e) => {
 });
 
 // Adicionar computador
+// Adicionar computador (alterado para redirecionar para unidade.html após salvar)
 async function adicionarComputador(event, unidadeId) {
   event.preventDefault();
   const setor = document.getElementById(`setor-${unidadeId}`).value.trim();
@@ -134,8 +142,8 @@ async function adicionarComputador(event, unidadeId) {
     });
 
     if (response.ok) {
-      abrirModalComputadores(unidadeId);
-      atualizarProgresso(unidadeId);
+      // Aqui em vez de abrir modal, redireciona pra página da unidade
+      window.location.href = `unidade.html?id=${unidadeId}`;
     } else {
       alert('Erro ao adicionar computador.');
     }
@@ -143,6 +151,7 @@ async function adicionarComputador(event, unidadeId) {
     console.error(error);
   }
 }
+
 
 // Editar computador
 function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
@@ -160,6 +169,7 @@ function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
 }
 
 // Salvar edição
+// Salvar edição (alterado para redirecionar para unidade.html após salvar)
 async function salvarComputador(compId, unidadeId) {
   const setor = document.getElementById(`input-setor-${compId}`).value.trim();
   const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value.trim();
@@ -178,8 +188,8 @@ async function salvarComputador(compId, unidadeId) {
     });
 
     if (response.ok) {
-      abrirModalComputadores(unidadeId);
-      atualizarProgresso(unidadeId);
+      // Redireciona para a página da unidade após salvar
+      window.location.href = `unidade.html?id=${unidadeId}`;
     } else {
       alert('Erro ao salvar.');
     }
@@ -187,6 +197,7 @@ async function salvarComputador(compId, unidadeId) {
     console.error(error);
   }
 }
+
 
 // Excluir computador
 async function excluirComputador(compId, unidadeId) {
@@ -437,6 +448,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function fecharModal() {
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modal-body').innerHTML = '';
+}
 
 
 // Inicialização ao carregar a página
