@@ -8,16 +8,74 @@
 
 body {
   background: #f0f8ff;
-  color: #222;
-  padding: 20px;
+  color: #004080;
+  padding: 30px;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #004080;
-  font-weight: 700;
-  letter-spacing: 2px;
+main h1{
+    color: #004080;
+    margin-left: 620px;
+    margin-bottom: 40px;
+}
+/* Ajusta o corpo para não ficar atrás do header fixo */
+body, main {
+  padding-top: 70px; /* altura do header + espaçamento */
+}
+
+/* Header fixo no topo */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #004080;
+  color: white;
+  padding: 15px 0;
+  box-shadow: 0 3px 8px rgba(0, 64, 128, 0.3);
+  z-index: 1100;
+}
+
+/* Container header para alinhar itens */
+.header-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* Ícone hamburger para abrir sidebar */
+.sidebar-open {
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: white;
+  cursor: pointer;
+  padding: 0 6px 2px 0;
+  user-select: none;
+}
+
+/* Menu nav alinhado à esquerda */
+.nav-menu {
+  display: flex;
+  gap: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Links nav */
+.nav-menu a {
+  color: #aad4ff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-menu a:hover,
+.nav-menu a:focus {
+  color: #ffffff;
+  text-decoration: underline;
+  outline: none;
 }
 
 /* Grid das unidades */
@@ -300,7 +358,6 @@ h1 {
   color: #000;
 }
 
-
 #buscaUnidade {
   display: block;
   margin: 0 auto 30px auto;
@@ -385,7 +442,6 @@ h1 {
   background-color: #004a99;
 }
 
-
 /* Responsividade */
 @media (max-width: 480px) {
   .grid-unidades {
@@ -408,5 +464,126 @@ h1 {
   }
 }
 
+/* ====================
+  SIDEBAR - barra lateral da equipe
+==================== */
 
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px; /* escondida fora da tela */
+  width: 280px;
+  height: 100vh;
+  background-color: #002d55;
+  color: #aad4ff;
+  box-shadow: 3px 0 12px rgba(0,0,0,0.3);
+  padding: 30px 20px;
+  transition: left 0.3s ease;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
 
+.sidebar h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+  color: #fff;
+  border-bottom: 2px solid #529fec;
+  padding-bottom: 8px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  flex-grow: 1;
+}
+
+.sidebar ul li {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  cursor: default;
+}
+
+/* Botão fechar na sidebar */
+.sidebar-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #aad4ff;
+  align-self: flex-end;
+  cursor: pointer;
+  margin-bottom: 20px;
+  user-select: none;
+}
+
+.sidebar-close:hover {
+  color: #ffffff;
+}
+
+/* Classe para abrir a sidebar */
+.sidebar.open {
+  left: 0;
+}
+
+/* ====================
+  FOOTER
+==================== */
+
+.site-footer {
+  background-color: #004080;
+  color: white;
+  padding: 18px 20px;
+  margin-top: 50px;
+  text-align: center;
+  font-size: 0.95rem;
+  box-shadow: inset 0 3px 6px rgb(0 64 128 / 0.3);
+}
+
+.site-footer strong {
+  font-weight: 700;
+}
+
+.site-footer .social-links {
+  margin-top: 8px;
+}
+
+.site-footer .social-links a {
+  color: #aad4ff;
+  text-decoration: none;
+  margin: 0 6px;
+  transition: color 0.3s ease;
+}
+
+.site-footer .social-links a:hover,
+.site-footer .social-links a:focus {
+  color: #ffffff;
+  outline: none;
+}
+
+/* Responsividade footer */
+@media (max-width: 480px) {
+  .site-footer {
+    font-size: 0.85rem;
+  }
+  .site-footer .social-links a {
+    margin: 0 4px;
+  }
+}
+
+/* Responsividade sidebar */
+@media (max-width: 400px) {
+  .sidebar {
+    width: 230px;
+  }
+  .nav-menu {
+    gap: 18px;
+  }
+  .sidebar ul li {
+    font-size: 1rem;
+  }
+}

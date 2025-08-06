@@ -1,4 +1,4 @@
-// script.js completo
+// script.js completo com comentários para ajudar na leitura
 
 async function carregarUnidades() {
   try {
@@ -22,7 +22,7 @@ async function carregarUnidades() {
         <div class="botoes">
           <button class="btn ver-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}')">Ver</button>
           <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
-          <button class="btn relatorio-btn" onclick="gerarRelatorio(${unidade.id}, '${unidade.nome}')">Relatório</button>
+          <button class="btn relatorio-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}', true)">Comentário</button>
         </div>
       `;
       container.appendChild(card);
@@ -35,8 +35,8 @@ async function carregarUnidades() {
   }
 }
 
-// Abrir modal com computadores
-async function abrirModalComputadores(unidadeId, unidadeNome) {
+// Abrir modal com computadores e opções
+async function abrirModalComputadores(unidadeId, unidadeNome, abrirComentario = false) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
     const computadores = await response.json();
@@ -63,6 +63,7 @@ async function abrirModalComputadores(unidadeId, unidadeNome) {
             </label>
             <button onclick="editarComputador(${comp.id}, '${comp.setor}', '${comp.patrimonio}', ${comp.quantidade}, ${unidadeId})" class="btn editar-btn">Editar</button>
             <button onclick="excluirComputador(${comp.id}, ${unidadeId})" class="btn excluir-btn">Excluir</button>
+            <button onclick="abrirComentario(${comp.id}, \`${comp.comentario || ''}\`, ${unidadeId})" class="btn relatorio-btn">Comentário</button>
           </div>
         `;
         modalBody.appendChild(div);
@@ -70,12 +71,17 @@ async function abrirModalComputadores(unidadeId, unidadeNome) {
     }
 
     abrirModal();
+
+    // Se solicitado, abrir o comentário do primeiro computador da lista
+    if (abrirComentario && computadores.length > 0) {
+      abrirComentario(computadores[0].id, computadores[0].comentario || '', unidadeId);
+    }
   } catch (error) {
     console.error('Erro ao carregar computadores:', error);
   }
 }
 
-// Abrir modal com formulário
+// Abrir modal com formulário para adicionar computador
 function abrirModalFormulario(unidadeId, unidadeNome) {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = `
@@ -244,7 +250,7 @@ async function atualizarProgresso(unidadeId) {
   }
 }
 
-// Função para exportar CSV formatado para Excel
+// Exportar CSV (continua igual)
 function exportarCSV(unidadeId, nomeUnidade, computadores) {
   const headers = ['Setor', 'Patrimônio', 'Quantidade', 'Otimizado'];
   const linhas = [headers.join(',')];
@@ -258,8 +264,8 @@ function exportarCSV(unidadeId, nomeUnidade, computadores) {
   });
 
   const csvContent = '\uFEFF' + linhas.join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 
-  const blob = new Blob([csvContent], { type: 'application/octet-stream;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -270,7 +276,7 @@ function exportarCSV(unidadeId, nomeUnidade, computadores) {
   URL.revokeObjectURL(url);
 }
 
-// Função para buscar computadores e gerar CSV
+// Função para buscar computadores e gerar CSV (não usado mais porque removemos botão Relatório, mas deixei caso queira)
 async function gerarRelatorio(unidadeId, nomeUnidade) {
   try {
     const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -289,4 +295,152 @@ async function gerarRelatorio(unidadeId, nomeUnidade) {
   }
 }
 
-window.onload = carregarUnidades;
+// --- NOVO: Função para abrir card de comentário ---
+
+function abrirComentario(compId, comentarioAtual, unidadeId) {
+  const modalBody = document.getElementById('modal-body');
+
+  modalBody.innerHTML = `
+    <h3 style="color: #004080; margin-bottom: 12px;">Comentário para o computador ID ${compId}</h3>
+    <textarea id="comentario-textarea" rows="6" style="width: 100%; padding: 10px; font-size: 1rem; border: 2px solid #004080; border-radius: 8px;">${comentarioAtual}</textarea>
+    <div style="margin-top: 16px;">
+      <button class="btn salvar-btn" onclick="salvarComentario(${compId}, ${unidadeId})">Salvar Comentário</button>
+      <button class="btn cancelar-btn" onclick="abrirModalComputadores(${unidadeId}, '', false)">Cancelar</button>
+    </div>
+  `;
+}
+
+// Salvar comentário via PUT
+async function salvarComentario(compId, unidadeId) {
+  const comentario = document.getElementById('comentario-textarea').value.trim();
+
+  try {
+    const response = await fetch(`/api/computadores/${compId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comentario })
+    });
+
+    if (response.ok) {
+      alert('Comentário salvo com sucesso!');
+      abrirModalComputadores(unidadeId, '', false);
+    } else {
+      alert('Erro ao salvar comentário.');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('Erro ao salvar comentário.');
+  }
+}
+
+// --- NOVO: Dashboard com gráficos ---
+
+let graficoPizza, graficoBarras;
+
+async function carregarDashboard() {
+  try {
+    const response = await fetch('/api/unidades');
+    const unidades = await response.json();
+
+    let totalOtimizados = 0;
+    let totalNaoOtimizados = 0;
+    const otimizadoPorUnidade = {};
+
+    for (const unidade of unidades) {
+      const resComp = await fetch(`/api/unidades/${unidade.id}/computadores`);
+      const computadores = await resComp.json();
+
+      const otimizados = computadores.filter(c => c.otimizado).length;
+      const naoOtimizados = computadores.length - otimizados;
+
+      totalOtimizados += otimizados;
+      totalNaoOtimizados += naoOtimizados;
+
+      otimizadoPorUnidade[unidade.nome] = otimizados;
+    }
+
+    montarGraficoPizza(totalOtimizados, totalNaoOtimizados);
+    montarGraficoBarras(otimizadoPorUnidade);
+  } catch (error) {
+    console.error('Erro ao carregar dashboard:', error);
+  }
+}
+
+function montarGraficoPizza(otimizados, naoOtimizados) {
+  const ctx = document.getElementById('graficoPizza').getContext('2d');
+  if (graficoPizza) graficoPizza.destroy();
+
+  graficoPizza = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Otimizado', 'Não Otimizado'],
+      datasets: [{
+        data: [otimizados, naoOtimizados],
+        backgroundColor: ['#28a745', '#dc3545'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        title: { display: true, text: 'Proporção Otimizado / Não Otimizado' }
+      }
+    }
+  });
+}
+
+function montarGraficoBarras(dados) {
+  const ctx = document.getElementById('graficoBarras').getContext('2d');
+  if (graficoBarras) graficoBarras.destroy();
+
+  graficoBarras = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(dados),
+      datasets: [{
+        label: 'Total Otimizações',
+        data: Object.values(dados),
+        backgroundColor: '#004080'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Total de Otimizações por Unidade' }
+      },
+      scales: {
+        y: { beginAtZero: true, precision: 0 }
+      }
+    }
+  });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.getElementById('sidebar');
+  const openBtn = document.getElementById('sidebar-open');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  openBtn.addEventListener('click', () => {
+    sidebar.classList.add('open');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+  });
+
+  // Fechar sidebar ao clicar fora (opcional)
+  document.addEventListener('click', (e) => {
+    if (!sidebar.contains(e.target) && !openBtn.contains(e.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+});
+
+
+// Inicialização ao carregar a página
+window.onload = () => {
+  carregarUnidades();
+  carregarDashboard();
+};

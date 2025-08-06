@@ -4,20 +4,61 @@
   <meta charset="UTF-8" />
   <title>UNIDADES DE SAÚDE - TI OTIMIZAÇÃO</title>
   <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <h1>UNIDADES DE SAÚDE - TI OTIMIZAÇÃO</h1>
-  <input type="text" id="buscaUnidade" placeholder="🔍 Buscar unidade..." />
-  <div id="lista-unidades" class="grid-unidades"></div>
+  <!-- Sidebar da equipe (inicialmente escondida) -->
+  <aside id="sidebar" class="sidebar">
+    <button id="sidebar-close" class="sidebar-close" aria-label="Fechar menu">&times;</button>
+    <h2>Equipe</h2>
+    <ul>
+      <li>Ricardo Borges do Amaral</li>
+      <li>Everton Maia</li>
+      <li>Robson Ferreira</li>
+      <li>Teodoro Alves</li>
+      <li>Rubens Souza</li>
+    </ul>
+  </aside>
 
-  <!-- Modal -->
-  <div id="modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span id="modal-close" class="modal-close">&times;</span>
-      <div id="modal-body"></div>
+  <!-- Header fixo -->
+  <header class="site-header">
+    <div class="container header-container">
+      <button id="sidebar-open" class="sidebar-open" aria-label="Abrir menu da equipe">
+        &#9776;
+      </button>
+      <nav class="nav-menu">
+        <a href="#lista-unidades">Unidades</a>
+        <a href="#buscaUnidade">Buscar</a>
+        <a href="#footer">Contato</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <script src="script.js"></script>
+  <!-- Conteúdo principal -->
+  <main>
+    <h1>UNIDADES DE SAÚDE - TI OTIMIZAÇÃO</h1>
+    <input type="text" id="buscaUnidade" placeholder="🔍 Buscar unidade..." />
+    <div id="lista-unidades" class="grid-unidades"></div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span id="modal-close" class="modal-close">&times;</span>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer" class="site-footer">
+    <div class="container footer-content">
+      <p>© 2025 TI Otimização. Todos os direitos reservados.</p>
+      <p>Desenvolvido por <strong>Ricardo Borges</strong></p>
+      <div class="social-links">
+        <a href="https://github.com/ricardoborges" target="_blank" rel="noopener noreferrer" aria-label="GitHub">GitHub</a> |
+        <a href="mailto:contato@tiotimizacao.com" aria-label="Email">Contato</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
