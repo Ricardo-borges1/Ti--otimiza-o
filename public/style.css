@@ -20,7 +20,7 @@ main {
 
 main h1 {
     color: #004080;
-    margin-left: 360px;
+    margin-left: 620px;
     margin-bottom: 40px;
 }
 
@@ -266,6 +266,11 @@ body, main {
     background-color: #dc3545;
 }
 
+/* NOVO: Estilo para o status "retirado" */
+.computador-card.retirado {
+    background-color: #6c757d; /* Cinza */
+}
+
 .computador-card .info {
     flex: 1;
     color: black;
@@ -442,6 +447,16 @@ body, main {
 
 .relatorio-btn:hover {
     background-color: #004a99;
+}
+
+/* NOVO: Estilo para o botão "Retirar" */
+.retirar-btn {
+    background-color: #343a40; /* Cor escura, discreta */
+    color: white;
+}
+
+.retirar-btn:hover {
+    background-color: #1d2124;
 }
 
 /* Estiliza o contêiner do gráfico */
@@ -638,6 +653,49 @@ body, main {
     .chart-container {
         width: 90%;
     }
+}
+
+
+/* Estilos para o botão Retirar */
+.btn.retirar-btn {
+    background-color: #ffc107; /* Amarelo */
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn.retirar-btn:hover {
+    background-color: #e00000;
+}
+
+/* Cor para o card de "Retirado" */
+.computador-card.retirado {
+    border-left: 5px solid #007bff; /* Azul para "Retirado" */
+}
+
+/* Cor para o texto de status "Retirado" */
+.computador-card.retirado .status {
+    background-color: #007bff;
+    color: white;
+}
+/* Desabilita os botões em cards retirados */
+.computador-card.retirado .actions button,
+.computador-card.retirado .actions input[type="checkbox"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.computador-card.retirado .actions .btn.retirar-btn {
+    background-color: #28a745; /* Muda para verde quando reativar */
+    color: white;
+    opacity: 1;
+}
+
+.computador-card.retirado .actions .btn.retirar-btn:hover {
+    background-color: #218838;
 }
 
 /* Responsividade sidebar */
