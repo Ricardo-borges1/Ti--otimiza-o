@@ -22,8 +22,7 @@ async function carregarUnidades() {
                 <div class="botoes">
                     <button class="btn ver-btn" onclick="irParaUnidade(${unidade.id})">Ver</button>
                     <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
-                    <button class="btn relatorio-btn" onclick="abrirModalComputadores(${unidade.id}, '${unidade.nome}', true)">Comentário</button>
-                </div>
+                    </div>
             `;
             container.appendChild(card);
             // Atualiza o progresso para essa unidade ao criar o card
@@ -206,7 +205,8 @@ async function excluirComputador(compId, unidadeId) {
 
         if (response.ok) {
             abrirModalComputadores(unidadeId);
-            atualizarProgresso(unidadeId);
+            // Chama a nova função para atualizar o progresso na página unidade.html
+            await atualizarProgressoUnidade(); 
         } else {
             alert('Erro ao excluir.');
         }
@@ -226,7 +226,8 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
         });
 
         if (response.ok) {
-            await atualizarProgresso(unidadeId);
+            // Chama a nova função para atualizar o progresso na página unidade.html
+            await atualizarProgressoUnidade(); 
             abrirModalComputadores(unidadeId);
         } else {
             alert('Erro ao alterar status.');
@@ -247,7 +248,8 @@ async function alterarStatusRetirado(compId, retirado, unidadeId) {
         });
 
         if (response.ok) {
-            await atualizarProgresso(unidadeId);
+            // Chama a nova função para atualizar o progresso na página unidade.html
+            await atualizarProgressoUnidade(); 
             abrirModalComputadores(unidadeId);
         } else {
             alert('Erro ao alterar status de retirado.');
@@ -257,7 +259,7 @@ async function alterarStatusRetirado(compId, retirado, unidadeId) {
     }
 }
 
-// Atualizar barra de progresso para cada unidade
+// Atualizar barra de progresso para cada unidade (página inicial)
 async function atualizarProgresso(unidadeId) {
     try {
         const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -265,8 +267,8 @@ async function atualizarProgresso(unidadeId) {
 
         const computadoresAtivos = computadores.filter(c => !c.retirado);
         
-        const total = computadoresAtivos.length;
-        const otimizados = computadoresAtivos.filter(c => c.otimizado).length;
+        const total = computadoresAtivos.reduce((sum, comp) => sum + comp.quantidade, 0);
+        const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
         const progresso = total === 0 ? 0 : Math.round((otimizados / total) * 100);
 
         const barra = document.getElementById(`barra-progresso-${unidadeId}`);
@@ -280,6 +282,36 @@ async function atualizarProgresso(unidadeId) {
         console.error('Erro ao atualizar barra de progresso:', error);
     }
 }
+
+// ---- NOVA FUNÇÃO PARA A PÁGINA UNIDADE.HTML ----
+async function atualizarProgressoUnidade() {
+    try {
+        // Pega o ID da unidade da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const unidadeId = urlParams.get('id');
+        if (!unidadeId) return;
+
+        const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
+        const computadores = await response.json();
+
+        const computadoresAtivos = computadores.filter(c => !c.retirado);
+        
+        const total = computadoresAtivos.reduce((sum, comp) => sum + comp.quantidade, 0);
+        const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
+        const progresso = total === 0 ? 0 : Math.round((otimizados / total) * 100);
+
+        const barra = document.getElementById(`progresso-unidade`);
+        const texto = document.getElementById(`texto-progresso-unidade`);
+
+        if (barra && texto) {
+            barra.style.width = `${progresso}%`;
+            texto.innerText = `Otimizado: ${progresso}% (${otimizados} de ${total})`;
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar barra de progresso da unidade:', error);
+    }
+}
+
 
 // Exportar CSV (continua igual)
 function exportarCSV(unidadeId, nomeUnidade, computadores) {
@@ -383,9 +415,9 @@ async function carregarDashboard() {
             const computadores = await resComp.json();
 
             const computadoresAtivos = computadores.filter(c => !c.retirado);
-
-            const otimizados = computadoresAtivos.filter(c => c.otimizado).length;
-            const naoOtimizados = computadoresAtivos.length - otimizados;
+            
+            const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
+            const naoOtimizados = computadoresAtivos.filter(c => !c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
 
             totalOtimizados += otimizados;
             totalNaoOtimizados += naoOtimizados;
@@ -472,6 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.onload = () => {
-    carregarUnidades();
-    carregarDashboard();
+    // Verifica se estamos na página principal ou na página de unidade
+    if (window.location.pathname.endsWith('unidade.html')) {
+        carregarDetalhesUnidade();
+    } else {
+        carregarUnidades();
+        carregarDashboard();
+    }
 };
