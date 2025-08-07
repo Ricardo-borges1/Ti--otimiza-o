@@ -1,3 +1,5 @@
+// unidade.js - CÓDIGO COMPLETO COM FILTROS E NOVO BOTÃO DE ADICIONAR
+
 const urlParams = new URLSearchParams(window.location.search);
 const unidadeId = urlParams.get('id');
 
@@ -5,6 +7,8 @@ if (!unidadeId) {
     alert('Unidade inválida.');
     window.location.href = 'index.html';
 }
+
+let todosOsComputadores = [];
 
 async function carregarComputadores() {
     try {
@@ -21,72 +25,161 @@ async function carregarComputadores() {
         document.getElementById('nome-unidade').innerText = unidade.nome;
 
         const res = await fetch(`/api/unidades/${unidadeId}/computadores`);
-        const computadores = await res.json();
-
-        const container = document.getElementById('lista-computadores');
-        container.innerHTML = '';
-
-        if (computadores.length === 0) {
-            container.innerHTML = '<p>Nenhum computador cadastrado.</p>';
-        } else {
-            computadores.forEach(comp => {
-                // Lógica de classe simples: 'otimizado' tem prioridade, depois 'retirado'
-                let cardClass = '';
-                let statusText = '';
-
-                if (comp.otimizado) {
-                    cardClass = 'otimizado';
-                    statusText = 'Otimizado';
-                } else if (comp.retirado) {
-                    cardClass = 'retirado';
-                    statusText = 'Retirado';
-                } else {
-                    cardClass = 'pendente';
-                    statusText = 'Pendente';
-                }
-
-                const div = document.createElement('div');
-                div.className = `computador-card ${cardClass}`;
-                div.innerHTML = `
-                    <div class="info">
-                        <strong>Setor:</strong> ${comp.setor}<br>
-                        <strong>Patrimônio:</strong> ${comp.patrimonio}<br>
-                        <strong>Quantidade:</strong> ${comp.quantidade}<br>
-                        <span class="status">${statusText}</span>
-                    </div>
-                    <div class="actions">
-                        <label>
-                            <input type="checkbox" onchange="alterarStatusOtimizado(${comp.id}, this.checked)" ${comp.otimizado ? 'checked' : ''}> Otimizado
-                        </label>
-                        <label>
-                            <input type="checkbox" onchange="alterarStatusRetirado(${comp.id}, this.checked)" ${comp.retirado ? 'checked' : ''}> Retirado
-                        </label>
-                        <button onclick="editarComputador(${comp.id}, '${comp.setor}', '${comp.patrimonio}', ${comp.quantidade})" class="btn editar-btn">Editar</button>
-                        <button onclick="excluirComputador(${comp.id})" class="btn excluir-btn">Excluir</button>
-                        <button onclick="abrirComentario(${comp.id}, \`${comp.comentario || ''}\`)" class="btn relatorio-btn">Comentário</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
+        todosOsComputadores = await res.json();
         
-        criarGraficoUnidade(computadores);
+        renderizarComputadores(todosOsComputadores);
+        criarGraficoUnidade(todosOsComputadores);
+
+        const filtroStatus = document.getElementById('filtroStatus');
+        const filtroSetor = document.getElementById('filtroSetor');
+        const filtroPatrimonio = document.getElementById('filtroPatrimonio');
+
+        if (filtroStatus) filtroStatus.addEventListener('change', filtrarComputadores);
+        if (filtroSetor) filtroSetor.addEventListener('keyup', filtrarComputadores);
+        if (filtroPatrimonio) filtroPatrimonio.addEventListener('keyup', filtrarComputadores);
 
     } catch (error) {
         console.error('Erro ao carregar computadores:', error);
     }
 }
 
-// Função de Otimizado (sem alterações)
+function renderizarComputadores(computadores) {
+    const container = document.getElementById('lista-computadores');
+    container.innerHTML = '';
+
+    if (computadores.length === 0) {
+        container.innerHTML = '<p>Nenhum computador encontrado com os filtros aplicados.</p>';
+    } else {
+        computadores.forEach(comp => {
+            let cardClass = '';
+            let statusText = '';
+
+            if (comp.otimizado) {
+                cardClass = 'otimizado';
+                statusText = 'Otimizado';
+            } else if (comp.retirado) {
+                cardClass = 'retirado';
+                statusText = 'Retirado';
+            } else {
+                cardClass = 'pendente';
+                statusText = 'Pendente';
+            }
+
+            const div = document.createElement('div');
+            div.className = `computador-card ${cardClass}`;
+            div.innerHTML = `
+                <div class="info">
+                    <strong>Setor:</strong> ${comp.setor}<br>
+                    <strong>Patrimônio:</strong> ${comp.patrimonio}<br>
+                    <strong>Quantidade:</strong> ${comp.quantidade}<br>
+                    <span class="status">${statusText}</span>
+                </div>
+                <div class="actions">
+                    <label>
+                        <input type="checkbox" onchange="alterarStatusOtimizado(${comp.id}, this.checked)" ${comp.otimizado ? 'checked' : ''} ${comp.retirado ? 'disabled' : ''}> Otimizado
+                    </label>
+                    <label>
+                        <input type="checkbox" onchange="alterarStatusRetirado(${comp.id}, this.checked)" ${comp.retirado ? 'checked' : ''} ${comp.otimizado ? 'disabled' : ''}> Retirado
+                    </label>
+                    <button onclick="editarComputador(${comp.id}, '${comp.setor}', '${comp.patrimonio}', ${comp.quantidade})" class="btn editar-btn">Editar</button>
+                    <button onclick="excluirComputador(${comp.id})" class="btn excluir-btn">Excluir</button>
+                    <button onclick="abrirComentario(${comp.id}, \`${comp.comentario || ''}\`)" class="btn relatorio-btn">Comentário</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+}
+
+function filtrarComputadores() {
+    const statusFiltro = document.getElementById('filtroStatus').value;
+    const setorFiltro = document.getElementById('filtroSetor').value.toLowerCase();
+    const patrimonioFiltro = document.getElementById('filtroPatrimonio').value.toLowerCase();
+
+    const computadoresFiltrados = todosOsComputadores.filter(comp => {
+        let statusMatch = true;
+        if (statusFiltro !== 'todos') {
+            if (statusFiltro === 'otimizado') {
+                statusMatch = comp.otimizado && !comp.retirado;
+            } else if (statusFiltro === 'pendente') {
+                statusMatch = !comp.otimizado && !comp.retirado;
+            } else if (statusFiltro === 'retirado') {
+                statusMatch = comp.retirado;
+            }
+        }
+        
+        const setorMatch = comp.setor.toLowerCase().includes(setorFiltro);
+        const patrimonioMatch = comp.patrimonio.toLowerCase().includes(patrimonioFiltro);
+
+        return statusMatch && setorMatch && patrimonioMatch;
+    });
+
+    renderizarComputadores(computadoresFiltrados);
+    criarGraficoUnidade(computadoresFiltrados);
+}
+
+// NOVO: Função para abrir o formulário de adição com o botão de retornar
+function abrirFormularioAdicionar() {
+    const container = document.getElementById('lista-computadores');
+    
+    // Limpa a tela para mostrar apenas o formulário
+    container.innerHTML = `
+        <h3 style="color: #004080;">Adicionar Novo Computador</h3>
+        <div class="formulario-container">
+            <label>Setor: <input type="text" id="novo-setor" placeholder="Nome do Setor" required></label><br>
+            <label>Patrimônio: <input type="text" id="novo-patrimonio" placeholder="Número de Patrimônio" required></label><br>
+            <label>Quantidade: <input type="number" id="nova-quantidade" value="1" min="1" required></label><br>
+            <button onclick="salvarNovoComputador()" class="btn salvar-btn">Salvar</button>
+            <button onclick="carregarComputadores()" class="btn cancelar-btn">Retornar</button>
+        </div>
+    `;
+}
+
+// NOVO: Função para salvar o novo computador
+async function salvarNovoComputador() {
+    const setor = document.getElementById('novo-setor').value.trim();
+    const patrimonio = document.getElementById('novo-patrimonio').value.trim();
+    const quantidade = parseInt(document.getElementById('nova-quantidade').value.trim(), 10);
+
+    if (!setor || !patrimonio || quantidade < 1) {
+        alert('Por favor, preencha todos os campos corretamente.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/computadores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ unidade_id: unidadeId, setor, patrimonio, quantidade })
+        });
+
+        if (response.ok) {
+            alert('Computador adicionado com sucesso!');
+            carregarComputadores(); // Recarrega a lista para mostrar o novo item
+        } else {
+            alert('Erro ao adicionar computador.');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// --- Funções CRUD e de Gráfico (mantidas intactas) ---
+
 async function alterarStatusOtimizado(compId, otimizado) {
     try {
+        const body = otimizado ? { otimizado: 1, retirado: 0 } : { otimizado: 0 };
         const response = await fetch(`/api/computadores/${compId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ otimizado: otimizado ? 1 : 0 })
+            body: JSON.stringify(body)
         });
         if (response.ok) {
-            carregarComputadores();
+            const compIndex = todosOsComputadores.findIndex(c => c.id === compId);
+            if (compIndex !== -1) {
+                todosOsComputadores[compIndex] = { ...todosOsComputadores[compIndex], ...body };
+            }
+            filtrarComputadores();
         } else {
             const errorText = await response.text();
             alert(`Erro ao alterar status de otimizado: ${errorText}`);
@@ -96,16 +189,20 @@ async function alterarStatusOtimizado(compId, otimizado) {
     }
 }
 
-// Função de Retirado (copiada e alterada do otimizado)
 async function alterarStatusRetirado(compId, retirado) {
     try {
+        const body = retirado ? { retirado: 1, otimizado: 0 } : { retirado: 0 };
         const response = await fetch(`/api/computadores/${compId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ retirado: retirado ? 1 : 0 })
+            body: JSON.stringify(body)
         });
         if (response.ok) {
-            carregarComputadores();
+            const compIndex = todosOsComputadores.findIndex(c => c.id === compId);
+            if (compIndex !== -1) {
+                todosOsComputadores[compIndex] = { ...todosOsComputadores[compIndex], ...body };
+            }
+            filtrarComputadores();
         } else {
             const errorText = await response.text();
             alert(`Erro ao alterar status de retirado: ${errorText}`);
@@ -114,7 +211,6 @@ async function alterarStatusRetirado(compId, retirado) {
         console.error(error);
     }
 }
-
 
 function criarGraficoUnidade(computadores) {
     const otimizados = computadores.filter(c => c.otimizado && !c.retirado).length;

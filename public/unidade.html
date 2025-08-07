@@ -8,16 +8,27 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="header-container">
-            <div class="header-content">
-                <button onclick="voltar()" class="voltar-btn">Voltar</button>
-                <h1>Computadores da Unidade</h1>
-            </div>
+    <div class="header-container">
+        <div class="header-content">
+            <button onclick="voltar()" class="voltar-btn">Voltar</button>
+            <button onclick="abrirFormularioAdicionar()" class="voltar-btn btn-adicionar">Adicionar Computador</button>
+            <h1>Computadores da Unidade</h1>
         </div>
-    </header>
+    </div>
+</header>
 
     <main>
         <h2 id="nome-unidade" style="margin-bottom: 20px; color: #004080;"></h2>
+        <div class="filtros-container">
+    <select id="filtroStatus">
+        <option value="todos">Todos os Status</option>
+        <option value="otimizado">Otimizado</option>
+        <option value="pendente">Pendente</option>
+        <option value="retirado">Retirado</option>
+    </select>
+    <input type="text" id="filtroSetor" placeholder="Filtrar por Setor...">
+    <input type="text" id="filtroPatrimonio" placeholder="Filtrar por Patrimônio...">
+</div>
         <div id="lista-computadores"></div>
         
         <div class="chart-container">
