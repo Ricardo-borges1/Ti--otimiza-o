@@ -1,38 +1,61 @@
-// script.js completo com comentários para ajudar na leitura
+// script.js completo com a funcionalidade de busca na página inicial
 
 async function carregarUnidades() {
     try {
         const response = await fetch('/api/unidades');
         const unidades = await response.json();
-        const container = document.getElementById('lista-unidades');
-        container.innerHTML = '';
 
-        for (const unidade of unidades) {
-            const card = document.createElement('div');
-            card.className = 'unidade-card';
-            card.innerHTML = `
-                <h2>${unidade.nome}</h2>
-                <p>${unidade.endereco}</p>
-                <div class="progresso-container">
-                    <div class="barra-externa">
-                        <div id="barra-progresso-${unidade.id}" class="barra-interna"></div>
-                    </div>
-                    <div id="texto-progresso-${unidade.id}" class="texto-progresso">Otimizado: 0% (0 de 0)</div>
-                </div>
-                <div class="botoes">
-                    <button class="btn ver-btn" onclick="irParaUnidade(${unidade.id})">Ver</button>
-                    <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
-                    </div>
-            `;
-            container.appendChild(card);
-            // Atualiza o progresso para essa unidade ao criar o card
-            await atualizarProgresso(unidade.id);
-        }
+        // Armazena as unidades originais em uma variável global
+        window.unidadesOriginais = unidades;
+        renderizarUnidades(unidades);
+
     } catch (error) {
         console.error('Erro ao carregar unidades:', error);
     }
 }
 
+// NOVA FUNÇÃO: Renderizar unidades filtradas
+function renderizarUnidades(unidades) {
+    const container = document.getElementById('lista-unidades');
+    container.innerHTML = '';
+
+    if (unidades.length === 0) {
+        container.innerHTML = '<p style="text-align: center; width: 100%;">Nenhuma unidade encontrada.</p>';
+        return;
+    }
+
+    for (const unidade of unidades) {
+        const card = document.createElement('div');
+        card.className = 'unidade-card';
+        card.innerHTML = `
+            <h2>${unidade.nome}</h2>
+            <p>${unidade.endereco}</p>
+            <div class="progresso-container">
+                <div class="barra-externa">
+                    <div id="barra-progresso-${unidade.id}" class="barra-interna"></div>
+                </div>
+                <div id="texto-progresso-${unidade.id}" class="texto-progresso">Otimizado: 0% (0 de 0)</div>
+            </div>
+            <div class="botoes">
+                <button class="btn ver-btn" onclick="irParaUnidade(${unidade.id})">Ver</button>
+                <button class="btn adicionar-btn" onclick="abrirModalFormulario(${unidade.id}, '${unidade.nome}')">Adicionar</button>
+            </div>
+        `;
+        container.appendChild(card);
+        // Atualiza o progresso após renderizar o card
+        atualizarProgresso(unidade.id);
+    }
+}
+
+// NOVA FUNÇÃO: Lógica de busca
+function buscarUnidades(event) {
+    const termo = event.target.value.toLowerCase();
+    const unidadesFiltradas = window.unidadesOriginais.filter(unidade =>
+        unidade.nome.toLowerCase().includes(termo) ||
+        unidade.endereco.toLowerCase().includes(termo)
+    );
+    renderizarUnidades(unidadesFiltradas);
+}
 
 function irParaUnidade(unidadeId) {
     // Redireciona para unidade.html com o id na query string
@@ -80,7 +103,6 @@ async function abrirModalComputadores(unidadeId, unidadeNome, abrirComentario = 
 
         abrirModal();
 
-        // Se solicitado, abrir o comentário do primeiro computador da lista
         if (abrirComentario && computadores.length > 0) {
             abrirComentario(computadores[0].id, computadores[0].comentario || '', unidadeId);
         }
@@ -122,7 +144,7 @@ window.addEventListener('click', (e) => {
     if (e.target.id === 'modal') fecharModal();
 });
 
-// Adicionar computador (alterado para redirecionar para unidade.html após salvar)
+// Adicionar computador
 async function adicionarComputador(event, unidadeId) {
     event.preventDefault();
     const setor = document.getElementById(`setor-${unidadeId}`).value.trim();
@@ -166,7 +188,7 @@ function editarComputador(compId, setor, patrimonio, quantidade, unidadeId) {
     `;
 }
 
-// Salvar edição (alterado para redirecionar para unidade.html após salvar)
+// Salvar edição
 async function salvarComputador(compId, unidadeId) {
     const setor = document.getElementById(`input-setor-${compId}`).value.trim();
     const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value.trim();
@@ -205,8 +227,7 @@ async function excluirComputador(compId, unidadeId) {
 
         if (response.ok) {
             abrirModalComputadores(unidadeId);
-            // Chama a nova função para atualizar o progresso na página unidade.html
-            await atualizarProgressoUnidade(); 
+            await atualizarProgressoUnidade();
         } else {
             alert('Erro ao excluir.');
         }
@@ -226,8 +247,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
         });
 
         if (response.ok) {
-            // Chama a nova função para atualizar o progresso na página unidade.html
-            await atualizarProgressoUnidade(); 
+            await atualizarProgressoUnidade();
             abrirModalComputadores(unidadeId);
         } else {
             alert('Erro ao alterar status.');
@@ -237,7 +257,7 @@ async function alterarStatusOtimizado(compId, otimizado, unidadeId) {
     }
 }
 
-// NOVA FUNÇÃO: Alterar status retirado
+// Alterar status retirado
 async function alterarStatusRetirado(compId, retirado, unidadeId) {
     try {
         const body = retirado ? { retirado: true, otimizado: false } : { retirado: false };
@@ -248,8 +268,7 @@ async function alterarStatusRetirado(compId, retirado, unidadeId) {
         });
 
         if (response.ok) {
-            // Chama a nova função para atualizar o progresso na página unidade.html
-            await atualizarProgressoUnidade(); 
+            await atualizarProgressoUnidade();
             abrirModalComputadores(unidadeId);
         } else {
             alert('Erro ao alterar status de retirado.');
@@ -266,7 +285,7 @@ async function atualizarProgresso(unidadeId) {
         const computadores = await response.json();
 
         const computadoresAtivos = computadores.filter(c => !c.retirado);
-        
+
         const total = computadoresAtivos.reduce((sum, comp) => sum + comp.quantidade, 0);
         const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
         const progresso = total === 0 ? 0 : Math.round((otimizados / total) * 100);
@@ -283,10 +302,9 @@ async function atualizarProgresso(unidadeId) {
     }
 }
 
-// ---- NOVA FUNÇÃO PARA A PÁGINA UNIDADE.HTML ----
+// Atualizar barra de progresso para a página unidade.html
 async function atualizarProgressoUnidade() {
     try {
-        // Pega o ID da unidade da URL
         const urlParams = new URLSearchParams(window.location.search);
         const unidadeId = urlParams.get('id');
         if (!unidadeId) return;
@@ -295,7 +313,7 @@ async function atualizarProgressoUnidade() {
         const computadores = await response.json();
 
         const computadoresAtivos = computadores.filter(c => !c.retirado);
-        
+
         const total = computadoresAtivos.reduce((sum, comp) => sum + comp.quantidade, 0);
         const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
         const progresso = total === 0 ? 0 : Math.round((otimizados / total) * 100);
@@ -312,8 +330,7 @@ async function atualizarProgressoUnidade() {
     }
 }
 
-
-// Exportar CSV (continua igual)
+// Exportar CSV
 function exportarCSV(unidadeId, nomeUnidade, computadores) {
     const headers = ['Setor', 'Patrimônio', 'Quantidade', 'Otimizado', 'Retirado', 'Comentário'];
     const linhas = [headers.join(',')];
@@ -341,7 +358,7 @@ function exportarCSV(unidadeId, nomeUnidade, computadores) {
     URL.revokeObjectURL(url);
 }
 
-// Função para buscar computadores e gerar CSV (não usado mais porque removemos botão Relatório, mas deixei caso queira)
+// Gerar relatório
 async function gerarRelatorio(unidadeId, nomeUnidade) {
     try {
         const response = await fetch(`/api/unidades/${unidadeId}/computadores`);
@@ -360,8 +377,7 @@ async function gerarRelatorio(unidadeId, nomeUnidade) {
     }
 }
 
-// --- Funções para o modal de comentário ---
-
+// Funções para o modal de comentário
 function abrirComentario(compId, comentarioAtual, unidadeId) {
     const modalBody = document.getElementById('modal-body');
 
@@ -397,8 +413,7 @@ async function salvarComentario(compId, unidadeId) {
     }
 }
 
-// --- Funções do Dashboard com gráficos ---
-
+// Funções do Dashboard com gráficos
 let graficoPizza, graficoBarras;
 
 async function carregarDashboard() {
@@ -415,7 +430,7 @@ async function carregarDashboard() {
             const computadores = await resComp.json();
 
             const computadoresAtivos = computadores.filter(c => !c.retirado);
-            
+
             const otimizados = computadoresAtivos.filter(c => c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
             const naoOtimizados = computadoresAtivos.filter(c => !c.otimizado).reduce((sum, comp) => sum + comp.quantidade, 0);
 
@@ -488,23 +503,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('sidebar-open');
     const closeBtn = document.getElementById('sidebar-close');
 
-    openBtn.addEventListener('click', () => {
-        sidebar.classList.add('open');
-    });
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+        });
+    }
 
-    closeBtn.addEventListener('click', () => {
-        sidebar.classList.remove('open');
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+    }
 
     document.addEventListener('click', (e) => {
-        if (!sidebar.contains(e.target) && !openBtn.contains(e.target)) {
+        if (sidebar && !sidebar.contains(e.target) && openBtn && !openBtn.contains(e.target)) {
             sidebar.classList.remove('open');
         }
     });
+
+    // Se houver campo de busca na página (index.html)
+    const buscaUnidadeInput = document.getElementById('buscaUnidade');
+    if (buscaUnidadeInput) {
+        buscaUnidadeInput.addEventListener('keyup', buscarUnidades);
+    }
 });
 
 window.onload = () => {
-    // Verifica se estamos na página principal ou na página de unidade
     if (window.location.pathname.endsWith('unidade.html')) {
         carregarDetalhesUnidade();
     } else {
