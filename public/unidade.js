@@ -408,27 +408,50 @@ function voltar() {
     window.location.href = 'index.html';
 }
 
-// NOVO: Função para gerar o relatório em PDF
+// NOVO: Função para gerar o relatório em PDF com suporte a múltiplas páginas
 function gerarRelatorioPDF() {
     const { jsPDF } = window.jspdf;
-    const element = document.getElementById('unidade-content');
+    const content = document.getElementById('unidade-content');
+    const nomeUnidadeElement = document.getElementById('nome-unidade');
+    const nomeUnidade = nomeUnidadeElement ? nomeUnidadeElement.innerText.trim() : 'Relatório';
 
-    html2canvas(element, {
-        scale: 2
+    if (!content) {
+        alert("Conteúdo para o relatório não encontrado.");
+        return;
+    }
+
+    // Configurações do PDF
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Captura o conteúdo do HTML
+    html2canvas(content, {
+        scale: 2, // Aumenta a escala para melhorar a qualidade
+        useCORS: true,
+        logging: false // Desabilita logs no console
     }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const imgWidth = pdfWidth;
+        const pageHeight = (canvas.height * imgWidth) / canvas.width;
+        let position = 0;
+        
+        // Adiciona a primeira página
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, pageHeight);
+        
+        // Adiciona novas páginas se o conteúdo for maior que uma página
+        let heightLeft = pageHeight;
+        while (heightLeft > pdfHeight) {
+            position -= pdfHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, pageHeight);
+            heightLeft -= pdfHeight;
+        }
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
-        pdf.setFontSize(10);
-        pdf.text('Gerado por Sistema de Gerenciamento de Patrimônio', 10, pdfHeight - 10);
-        
-        const nomeUnidade = document.getElementById('nome-unidade').innerText;
         pdf.save(`relatorio_${nomeUnidade}.pdf`);
+    }).catch(error => {
+        console.error("Erro ao gerar PDF:", error);
+        alert("Ocorreu um erro ao gerar o PDF. Verifique o console para mais detalhes.");
     });
 }
 
