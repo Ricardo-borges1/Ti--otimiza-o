@@ -1,4 +1,4 @@
-// unidade.js - CÓDIGO COMPLETO COM FILTROS E NOVO BOTÃO DE ADICIONAR
+// ARQUIVO COMPLETO: unidade.js
 
 const urlParams = new URLSearchParams(window.location.search);
 const unidadeId = urlParams.get('id');
@@ -29,6 +29,8 @@ async function carregarComputadores() {
         
         renderizarComputadores(todosOsComputadores);
         criarGraficoUnidade(todosOsComputadores);
+        
+        await carregarHistoricoOtimizacoes(unidadeId);
 
         const filtroStatus = document.getElementById('filtroStatus');
         const filtroSetor = document.getElementById('filtroSetor');
@@ -116,13 +118,12 @@ function filtrarComputadores() {
 
     renderizarComputadores(computadoresFiltrados);
     criarGraficoUnidade(computadoresFiltrados);
+    criarGraficoTendencia(computadoresFiltrados);
 }
 
-// NOVO: Função para abrir o formulário de adição com o botão de retornar
 function abrirFormularioAdicionar() {
     const container = document.getElementById('lista-computadores');
     
-    // Limpa a tela para mostrar apenas o formulário
     container.innerHTML = `
         <h3 style="color: #004080;">Adicionar Novo Computador</h3>
         <div class="formulario-container">
@@ -135,7 +136,6 @@ function abrirFormularioAdicionar() {
     `;
 }
 
-// NOVO: Função para salvar o novo computador
 async function salvarNovoComputador() {
     const setor = document.getElementById('novo-setor').value.trim();
     const patrimonio = document.getElementById('novo-patrimonio').value.trim();
@@ -155,7 +155,7 @@ async function salvarNovoComputador() {
 
         if (response.ok) {
             alert('Computador adicionado com sucesso!');
-            carregarComputadores(); // Recarrega a lista para mostrar o novo item
+            carregarComputadores();
         } else {
             alert('Erro ao adicionar computador.');
         }
@@ -164,7 +164,46 @@ async function salvarNovoComputador() {
     }
 }
 
-// --- Funções CRUD e de Gráfico (mantidas intactas) ---
+function editarComputador(compId, setor, patrimonio, quantidade) {
+    const container = document.getElementById('lista-computadores');
+    container.innerHTML = `
+        <h3 style="color: #004080;">Editar Computador</h3>
+        <div class="formulario-container">
+            <label>Setor: <input type="text" id="input-setor-${compId}" value="${setor}"></label><br>
+            <label>Patrimônio: <input type="text" id="input-patrimonio-${compId}" value="${patrimonio}"></label><br>
+            <label>Quantidade: <input type="number" id="input-quantidade-${compId}" value="${quantidade}" min="1"></label><br>
+            <button onclick="salvarEdicaoComputador(${compId})" class="btn salvar-btn">Salvar</button>
+            <button onclick="carregarComputadores()" class="btn cancelar-btn">Cancelar</button>
+        </div>
+    `;
+}
+
+async function salvarEdicaoComputador(compId) {
+    const setor = document.getElementById(`input-setor-${compId}`).value.trim();
+    const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value.trim();
+    const quantidade = parseInt(document.getElementById(`input-quantidade-${compId}`).value.trim(), 10);
+
+    if (!setor || !patrimonio || quantidade < 1) {
+        alert('Preencha todos os campos corretamente.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/computadores/${compId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ setor, patrimonio, quantidade })
+        });
+        if (response.ok) {
+            alert('Computador editado com sucesso!');
+            carregarComputadores();
+        } else {
+            alert('Erro ao salvar edição.');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 async function alterarStatusOtimizado(compId, otimizado) {
     try {
@@ -248,6 +287,76 @@ function criarGraficoUnidade(computadores) {
     });
 }
 
+async function carregarHistoricoOtimizacoes(unidadeId) {
+    try {
+        const historicoMock = [
+            { "mes": "Jan-24", "otimizados": 15, "pendentes": 5 },
+            { "mes": "Fev-24", "otimizados": 20, "pendentes": 3 },
+            { "mes": "Mar-24", "otimizados": 22, "pendentes": 1 }
+        ];
+
+        criarGraficoTendencia(historicoMock);
+    } catch (error) {
+        console.error('Erro ao carregar histórico de otimizações:', error);
+    }
+}
+
+function criarGraficoTendencia(dadosHistorico) {
+    const ctx = document.getElementById('tendencia-chart').getContext('2d');
+    
+    const labels = dadosHistorico.map(d => d.mes);
+    const otimizados = dadosHistorico.map(d => d.otimizados);
+    const total = dadosHistorico.map(d => d.otimizados + d.pendentes);
+
+    if (window.tendenciaChart) {
+        window.tendenciaChart.destroy();
+    }
+
+    window.tendenciaChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Computadores Otimizados',
+                    data: otimizados,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Total de Computadores',
+                    data: total,
+                    borderColor: '#004080',
+                    backgroundColor: 'rgba(0, 64, 128, 0.2)',
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Evolução das Otimizações por Mês',
+                    font: { size: 18, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Computadores'
+                    }
+                }
+            }
+        }
+    });
+}
+
 async function excluirComputador(compId) {
     if (!confirm('Tem certeza que deseja excluir?')) return;
     try {
@@ -256,46 +365,6 @@ async function excluirComputador(compId) {
             carregarComputadores();
         } else {
             alert('Erro ao excluir.');
-        }
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-function editarComputador(compId, setor, patrimonio, quantidade) {
-    const container = document.getElementById('lista-computadores');
-    container.innerHTML = `
-        <h3 style="color: #004080;">Editar Computador</h3>
-        <div class="formulario-container">
-            <label>Setor: <input type="text" id="input-setor-${compId}" value="${setor}"></label><br>
-            <label>Patrimônio: <input type="text" id="input-patrimonio-${compId}" value="${patrimonio}"></label><br>
-            <label>Quantidade: <input type="number" id="input-quantidade-${compId}" value="${quantidade}" min="1"></label><br>
-            <button onclick="salvarComputador(${compId})" class="btn salvar-btn">Salvar</button>
-            <button onclick="carregarComputadores()" class="btn cancelar-btn">Cancelar</button>
-        </div>
-    `;
-}
-
-async function salvarComputador(compId) {
-    const setor = document.getElementById(`input-setor-${compId}`).value.trim();
-    const patrimonio = document.getElementById(`input-patrimonio-${compId}`).value.trim();
-    const quantidade = parseInt(document.getElementById(`input-quantidade-${compId}`).value.trim(), 10);
-
-    if (!setor || !patrimonio || quantidade < 1) {
-        alert('Preencha todos os campos corretamente.');
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/computadores/${compId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ setor, patrimonio, quantidade })
-        });
-        if (response.ok) {
-            carregarComputadores();
-        } else {
-            alert('Erro ao salvar.');
         }
     } catch (error) {
         console.error(error);
@@ -337,6 +406,30 @@ async function salvarComentario(compId) {
 
 function voltar() {
     window.location.href = 'index.html';
+}
+
+// NOVO: Função para gerar o relatório em PDF
+function gerarRelatorioPDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById('unidade-content');
+
+    html2canvas(element, {
+        scale: 2
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        pdf.setFontSize(10);
+        pdf.text('Gerado por Sistema de Gerenciamento de Patrimônio', 10, pdfHeight - 10);
+        
+        const nomeUnidade = document.getElementById('nome-unidade').innerText;
+        pdf.save(`relatorio_${nomeUnidade}.pdf`);
+    });
 }
 
 carregarComputadores();

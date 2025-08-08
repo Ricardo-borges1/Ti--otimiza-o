@@ -776,6 +776,35 @@ body, main {
     background-color: #218838; /* Cor verde mais escura no hover */
 }
 
+/* CÓDIGO A SER ADICIONADO AO SEU style.css */
+.voltar-btn.btn-pdf {
+    background-color: #dc3545; /* Cor vermelha para o PDF */
+}
+
+.voltar-btn.btn-pdf:hover {
+    background-color: #c82333;
+}
+
+
+/* NOVO: Estilo para unidades com 100% de otimização */
+.unidade-card.unidade-completa {
+    border: 3px solid #28a745; /* Borda verde sólida */
+    background: #e9ffea; /* Fundo verde claro */
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25); /* Sombra verde */
+    transition: all 0.3s ease;
+}
+
+.unidade-card.unidade-completa:hover {
+    box-shadow: 0 6px 18px rgba(40, 167, 69, 0.4);
+    transform: translateY(-2px); /* Efeito de elevação sutil */
+}
+
+/* Opcional: Estilizar o texto de progresso dentro do card completo */
+.unidade-card.unidade-completa .texto-progresso {
+    color: #1e7e34; /* Mudar a cor do texto para verde escuro */
+}
+
+
 /* Responsividade sidebar */
 @media (max-width: 400px) {
     .sidebar {

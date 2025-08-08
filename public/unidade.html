@@ -1,41 +1,57 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes da Unidade</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header class="site-header">
-    <div class="header-container">
-        <div class="header-content">
-            <button onclick="voltar()" class="voltar-btn">Voltar</button>
-            <button onclick="abrirFormularioAdicionar()" class="voltar-btn btn-adicionar">Adicionar Computador</button>
-            <h1>Computadores da Unidade</h1>
+        <div class="header-container">
+            <div class="header-content">
+                <div class="header-buttons"> <button onclick="voltar()" class="voltar-btn">Voltar</button>
+                    <button onclick="abrirFormularioAdicionar()" class="voltar-btn btn-adicionar">Adicionar Computador</button>
+                    <button onclick="gerarRelatorioPDF()" class="voltar-btn btn-pdf">Gerar PDF</button>
+                </div>
+                <h1>Computadores da Unidade</h1>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
-    <main>
-        <h2 id="nome-unidade" style="margin-bottom: 20px; color: #004080;"></h2>
+    <main class="container" id="unidade-content">
+        <h2 id="nome-unidade"></h2>
+
         <div class="filtros-container">
-    <select id="filtroStatus">
-        <option value="todos">Todos os Status</option>
-        <option value="otimizado">Otimizado</option>
-        <option value="pendente">Pendente</option>
-        <option value="retirado">Retirado</option>
-    </select>
-    <input type="text" id="filtroSetor" placeholder="Filtrar por Setor...">
-    <input type="text" id="filtroPatrimonio" placeholder="Filtrar por Patrimônio...">
-</div>
-        <div id="lista-computadores"></div>
-        
-        <div class="chart-container">
-            <canvas id="unidade-chart"></canvas>
+            <input type="text" id="filtroSetor" placeholder="Filtrar por Setor...">
+            <input type="text" id="filtroPatrimonio" placeholder="Filtrar por Patrimônio...">
+            <select id="filtroStatus">
+                <option value="todos">Todos</option>
+                <option value="otimizado">Otimizado</option>
+                <option value="pendente">Pendente</option>
+                <option value="retirado">Retirado</option>
+            </select>
         </div>
+        
+        <div id="lista-computadores" class="lista-container">
+            </div>
+
+        <div class="charts-container">
+            <div class="chart-container">
+                <canvas id="unidade-chart"></canvas>
+            </div>
+        
+            <div class="chart-container">
+                <h2 style="text-align: center; color: #004080;">Tendência de Otimização</h2>
+                <canvas id="tendencia-chart"></canvas>
+            </div>
+        </div>
+
     </main>
-    
+
     <script src="unidade.js"></script>
 </body>
 </html>

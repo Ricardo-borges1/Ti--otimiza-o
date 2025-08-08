@@ -27,6 +27,7 @@ function renderizarUnidades(unidades) {
     for (const unidade of unidades) {
         const card = document.createElement('div');
         card.className = 'unidade-card';
+        card.id = `unidade-card-${unidade.id}`; // NOVO: Adicionado um ID para o card
         card.innerHTML = `
             <h2>${unidade.nome}</h2>
             <p>${unidade.endereco}</p>
@@ -292,11 +293,22 @@ async function atualizarProgresso(unidadeId) {
 
         const barra = document.getElementById(`barra-progresso-${unidadeId}`);
         const texto = document.getElementById(`texto-progresso-${unidadeId}`);
+        const card = document.getElementById(`unidade-card-${unidadeId}`); // NOVO: Pega o elemento do card
 
         if (barra && texto) {
             barra.style.width = `${progresso}%`;
             texto.innerText = `Otimizado: ${progresso}% (${otimizados} de ${total})`;
         }
+
+        // NOVO: Adiciona ou remove a classe de destaque com base no progresso
+        if (card) {
+            if (progresso === 100) {
+                card.classList.add('unidade-completa');
+            } else {
+                card.classList.remove('unidade-completa');
+            }
+        }
+
     } catch (error) {
         console.error('Erro ao atualizar barra de progresso:', error);
     }
@@ -527,6 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
         buscaUnidadeInput.addEventListener('keyup', buscarUnidades);
     }
 });
+
+
+
 
 window.onload = () => {
     if (window.location.pathname.endsWith('unidade.html')) {
